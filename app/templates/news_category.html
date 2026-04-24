@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+{% block title %}{{ category.title }} - Actualités musicales{% endblock %}
+
+{% block content %}
+<h1>Actualités : {{ category.title }}</h1>
+{% for article in articles %}
+  <div class="card mb-4 shadow-sm">
+    {% if article.image_url %}
+      <img src="{{ article.image_url }}" class="card-img-top" alt="{{ article.title }}">
+    {% endif %}
+    <div class="card-body">
+      <h3>{{ article.title }}</h3>
+      <p class="text-muted small">Publié le {{ article.published_at.strftime('%d/%m/%Y') }}</p>
+      <p>{{ article.summary }}</p>
+      <p>{{ article.content }}</p>
+    </div>
+  </div>
+{% else %}
+  <div class="alert alert-info">Aucun article pour cette catégorie.</div>
+{% endfor %}
+{% endblock %}
