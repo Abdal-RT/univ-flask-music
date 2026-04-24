@@ -1,164 +1,109 @@
-from datetime import date
+import datetime
+from flask import Blueprint, render_template, redirect, url_for, flash, request
+from flask_login import login_user, logout_user, login_required, current_user
+from app import db
+from app.models import User, Categorie, Actualite, Concert, Reservation, Commentaire
+from app.forms import LoginForm, InscriptionForm, ReservationForm, CommentaireForm
 
-from flask import Blueprint, flash, redirect, render_template, request, url_for
-from flask_login import current_user, login_user, logout_user, login_required
-from werkzeug.security import check_password_hash, generate_password_hash
+main_bp = Blueprint('main', __name__)
 
-from app import db, login_manager
-from app.forms import CommentForm, ConcertForm, LoginForm, RegisterForm, ReservationForm
-from app.models import Category, Comment, Concert, NewsArticle, Reservation, User
+@main_bp.route('/')
+def index():
+    dernieres_actus = Actualite.query.order_by(Actualite.date_publication.desc()).limit(3).all()
+    aujourd_hui = datetime.datetime.utcnow().date()
+    prochains_concerts = Concert.query.filter(Concert.date_concert >= aujourd_hui).order_by(Concert.date_concert.asc()).limit(3).all()
+    
+    return render_template('index.html', actualites=dernieres_actus, concerts=prochains_concerts)
 
-main_bp = Blueprint("main", __name__)
-
-
-@login_manager.user_loader
-def load_user(user_id):
-    return User.query.get(int(user_id))
-
-
-@main_bp.route("/")
-def home():
-    latest_news = NewsArticle.query.order_by(NewsArticle.published_at.desc()).limit(4).all()
-    upcoming = Concert.query.filter(Concert.date >= date.today()).order_by(Concert.date.asc()).limit(4).all()
-    return render_template("home.html", latest_news=latest_news, upcoming=upcoming)
-
-
-@main_bp.route("/concerts")
+@main_bp.route('/concerts')
 def concerts():
-    categories = Category.query.order_by(Category.title).all()
-    selected_category = request.args.get("category", type=int)
-    selected_city = request.args.get("city", type=str)
-    selected_date = request.args.get("date", type=str)
+    aujourd_hui = datetime.datetime.utcnow().date()
+    liste_concerts = Concert.query.filter(Concert.date_concert >= aujourd_hui).order_by(Concert.date_concert.asc()).all()
+    return render_template('concerts.html', concerts=liste_concerts)
 
-    query = Concert.query.filter(Concert.date >= date.today())
-    if selected_category:
-        query = query.filter_by(category_id=selected_category)
-    if selected_city:
-        query = query.filter(Concert.city.ilike(f"%{selected_city}%"))
-    if selected_date:
-        try:
-            query = query.filter(Concert.date == selected_date)
-        except ValueError:
-            pass
-
-    concerts = query.order_by(Concert.date.asc()).all()
-    return render_template(
-        "concerts.html",
-        concerts=concerts,
-        categories=categories,
-        selected_category=selected_category,
-        selected_city=selected_city,
-        selected_date=selected_date,
-    )
-
-
-@main_bp.route("/concerts/passes")
+@main_bp.route('/concerts-passes')
 def past_concerts():
-    concerts = Concert.query.filter(Concert.date < date.today()).order_by(Concert.date.desc()).all()
-    return render_template("past_concerts.html", concerts=concerts)
+    aujourd_hui = datetime.datetime.utcnow().date()
+    concerts_passes = Concert.query.filter(Concert.date_concert < aujourd_hui).order_by(Concert.date_concert.desc()).all()
+    return render_template('past_concerts.html', concerts=concerts_passes)
 
-
-@main_bp.route("/concerts/<int:concert_id>", methods=["GET", "POST"])
+@main_bp.route('/concert/<int:concert_id>', methods=['GET', 'POST'])
 def concert_detail(concert_id):
     concert = Concert.query.get_or_404(concert_id)
     reservation_form = ReservationForm()
-    comment_form = CommentForm()
+    commentaire_form = CommentaireForm()
 
-    if reservation_form.validate_on_submit() and reservation_form.reserve.data:
+    # Logique de réservation
+    if not concert.est_passe and reservation_form.validate_on_submit() and reservation_form.reserve.data:
         if not current_user.is_authenticated:
             flash("Vous devez être connecté pour réserver.", "warning")
-            return redirect(url_for("main.login"))
+            return redirect(url_for('main.login'))
 
-        seats = reservation_form.seats.data
-        if seats > concert.available_seats:
-            flash("Le nombre de places demandé dépasse la capacité disponible.", "danger")
-        else:
-            concert.reserved_seats += seats
-            reservation = Reservation(seats=seats, concert=concert, user=current_user)
-            db.session.add(reservation)
+        if reservation_form.places.data <= concert.places_disponibles():
+            nouvelle_resa = Reservation(places=reservation_form.places.data, user_id=current_user.id, concert_id=concert.id)
+            db.session.add(nouvelle_resa)
             db.session.commit()
-            flash("Réservation réussie !", "success")
-            return redirect(url_for("main.concert_detail", concert_id=concert_id))
+            flash("Réservation confirmée avec succès !", "success")
+            return redirect(url_for('main.concert_detail', concert_id=concert.id))
+        else:
+            flash("Désolé, il n'y a pas assez de places disponibles.", "danger")
 
-    if comment_form.validate_on_submit() and comment_form.publish.data:
-        comment = Comment(
-            author=comment_form.author.data,
-            content=comment_form.content.data,
-            concert=concert,
-        )
-        db.session.add(comment)
+    # Logique de commentaire
+    if concert.est_passe and commentaire_form.validate_on_submit() and commentaire_form.publish.data:
+        nouveau_commentaire = Commentaire(auteur=commentaire_form.auteur.data, contenu=commentaire_form.contenu.data, concert_id=concert.id)
+        db.session.add(nouveau_commentaire)
         db.session.commit()
-        flash("Commentaire publié.", "success")
-        return redirect(url_for("main.concert_detail", concert_id=concert_id))
+        flash("Votre commentaire a été publié !", "success")
+        return redirect(url_for('main.concert_detail', concert_id=concert.id))
 
-    return render_template(
-        "concert_detail.html",
-        concert=concert,
-        reservation_form=reservation_form,
-        comment_form=comment_form,
-    )
+    return render_template('concert_detail.html', concert=concert, r_form=reservation_form, c_form=commentaire_form)
 
+@main_bp.route('/actualites')
+def actualites():
+    liste_actus = Actualite.query.order_by(Actualite.date_publication.desc()).all()
+    return render_template('actualites.html', actualites=liste_actus)
 
-@main_bp.route("/news")
-def news():
-    categories = Category.query.order_by(Category.title).all()
-    articles = NewsArticle.query.order_by(NewsArticle.published_at.desc()).all()
-    return render_template("news.html", categories=categories, articles=articles)
+# --- Authentification ---
 
-
-@main_bp.route("/news/categorie/<int:category_id>")
-def news_category(category_id):
-    category = Category.query.get_or_404(category_id)
-    articles = NewsArticle.query.filter_by(category_id=category.id).order_by(NewsArticle.published_at.desc()).all()
-    return render_template("news_category.html", category=category, articles=articles)
-
-
-@main_bp.route("/login", methods=["GET", "POST"])
+@main_bp.route('/login', methods=['GET', 'POST'])
 def login():
     if current_user.is_authenticated:
-        return redirect(url_for("main.home"))
-
+        return redirect(url_for('main.index'))
+    
     form = LoginForm()
     if form.validate_on_submit():
         user = User.query.filter_by(email=form.email.data).first()
-        if user and check_password_hash(user.password, form.password.data):
+        if user and user.check_password(form.password.data):
             login_user(user)
-            flash("Connexion réussie.", "success")
-            return redirect(request.args.get("next") or url_for("main.home"))
+            flash('Connexion réussie !', 'success')
+            return redirect(url_for('admin.dashboard') if user.is_admin else url_for('main.index'))
+        else:
+            flash('Email ou mot de passe incorrect.', 'danger')
+            
+    return render_template('login.html', form=form)
 
-        flash("Email ou mot de passe invalide.", "danger")
-
-    return render_template("login.html", form=form)
-
-
-@main_bp.route("/register", methods=["GET", "POST"])
+@main_bp.route('/register', methods=['GET', 'POST'])
 def register():
     if current_user.is_authenticated:
-        return redirect(url_for("main.home"))
-
-    form = RegisterForm()
+        return redirect(url_for('main.index'))
+    
+    form = InscriptionForm()
     if form.validate_on_submit():
         if User.query.filter_by(email=form.email.data).first():
-            flash("Un compte avec cet e-mail existe déjà.", "warning")
+            flash('Cet email est déjà utilisé.', 'danger')
         else:
-            user = User(
-                email=form.email.data,
-                name=form.name.data,
-                password=generate_password_hash(form.password.data),
-                is_admin=False,
-            )
-            db.session.add(user)
+            new_user = User(nom=form.nom.data, email=form.email.data)
+            new_user.set_password(form.password.data)
+            db.session.add(new_user)
             db.session.commit()
-            login_user(user)
-            flash("Compte créé avec succès.", "success")
-            return redirect(url_for("main.home"))
+            flash('Compte créé avec succès ! Vous pouvez maintenant vous connecter.', 'success')
+            return redirect(url_for('main.login'))
+            
+    return render_template('register.html', form=form)
 
-    return render_template("register.html", form=form)
-
-
-@main_bp.route("/logout")
+@main_bp.route('/logout')
 @login_required
 def logout():
     logout_user()
-    flash("Déconnexion réussie.", "info")
-    return redirect(url_for("main.home"))
+    flash('Vous avez été déconnecté.', 'info')
+    return redirect(url_for('main.index'))

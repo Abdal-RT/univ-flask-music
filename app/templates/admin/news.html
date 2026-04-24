@@ -18,7 +18,7 @@
       {% for article in articles %}
         <tr>
           <td>{{ article.title }}</td>
-          <td>{{ article.category.title }}</td>
+          <td>{{ article.categorie.titre }}</td>
           <td>{{ article.published_at.strftime('%d/%m/%Y') }}</td>
           <td>
             <a href="{{ url_for('admin.edit_news', article_id=article.id) }}" class="btn btn-sm btn-outline-secondary me-2">Modifier</a>

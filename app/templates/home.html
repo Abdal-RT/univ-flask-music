@@ -3,10 +3,33 @@
 
 {% block content %}
 <div class="hero rounded-4 overflow-hidden mb-5 shadow-sm">
-  <img src="{{ url_for('static', filename='images/design.png') }}" alt="Musique" class="img-fluid w-100" />
-  <div class="hero-overlay text-white p-5">
-    <h1 class="display-5">Actualités musicales & concerts</h1>
-    <p class="lead">Suivez les événements régionaux, réservez vos places et consultez les dernières tendances musicales.</p>
+  <div class="hero-overlay p-5">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start gap-3 mb-4">
+      <span class="hero-badge">Magazine musical</span>
+      <a href="{{ url_for('main.home') }}" class="btn btn-outline-light btn-home-hero">Accueil</a>
+    </div>
+    <div class="hero-copy">
+      <h1 class="display-5">Découvrez la scène musicale locale autrement</h1>
+      <p class="lead">Une vitrine pour les concerts de la région, les actualités par genre et une expérience de réservation fluide et inspirante.</p>
+      <div class="d-flex flex-wrap gap-3 mt-4">
+        <a href="{{ url_for('main.concerts') }}" class="btn btn-primary btn-lg">Voir les concerts</a>
+        <a href="{{ url_for('main.index') }}" class="btn btn-outline-primary btn-lg">Lire les actualités</a>
+      </div>
+      {% if current_user.is_authenticated and current_user.is_admin %}
+        <div class="admin-spotlight mt-4 p-3 rounded-3 border border-warning bg-dark bg-opacity-50">
+          <h4>Mode administration</h4>
+          <p class="mb-2">Vous êtes connecté en tant qu’administrateur. Gérer les concerts, les actualités et les catégories depuis le tableau de bord.</p>
+          <a href="{{ url_for('admin.dashboard') }}" class="btn btn-outline-warning">Ouvrir l’administration</a>
+        </div>
+      {% endif %}
+      {% if current_user.is_authenticated and current_user.is_admin %}
+        <div class="admin-spotlight mt-4 p-3 rounded-3 border border-warning bg-dark bg-opacity-50">
+          <h4>Mode administration</h4>
+          <p class="mb-2">Vous êtes connecté en tant qu’administrateur. Gérer les concerts, les actualités et les catégories depuis le tableau de bord.</p>
+          <a href="{{ url_for('admin.dashboard') }}" class="btn btn-outline-warning">Ouvrir l’administration</a>
+        </div>
+      {% endif %}
+    </div>
   </div>
 </div>
 
@@ -24,9 +47,9 @@
           {% endif %}
           <div class="card-body">
             <h5 class="card-title">{{ article.title }}</h5>
-            <p class="text-muted small">{{ article.category.title }} • {{ article.published_at.strftime('%d %B %Y') }}</p>
+            <p class="text-muted small">{{ article.categorie.titre }} • {{ article.published_at.strftime('%d %B %Y') }}</p>
             <p class="card-text">{{ article.summary }}</p>
-            <a href="{{ url_for('main.news_category', category_id=article.category_id) }}" class="stretched-link">Voir la catégorie</a>
+            <a href="{{ url_for('main.news_category', category_id=article.categorie.id) }}" class="stretched-link">Voir la catégorie</a>
           </div>
         </div>
       </div>

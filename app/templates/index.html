@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row mt-4">
+    <div class="col-md-6">
+        <h2 class="mb-3">Prochains Concerts</h2>
+        {% if concerts %}
+            <div class="list-group">
+                {% for concert in concerts %}
+                <div class="list-group-item">
+                    <div class="d-flex w-100 justify-content-between">
+                        <h5 class="mb-1">{{ concert.titre }}</h5>
+                        <small class="text-muted">{{ concert.date_concert.strftime('%d/%m/%Y') }}</small>
+                    </div>
+                    <p class="mb-1">📍 {{ concert.lieu }} | 🎸 {{ concert.type_musique }}</p>
+                    <small>Places : {{ concert.places_disponibles() }} / {{ concert.places_totales }}</small>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="alert alert-info">Aucun concert prévu pour le moment.</div>
+        {% endif %}
+    </div>
+
+    <div class="col-md-6">
+        <h2 class="mb-3">Dernières Actualités</h2>
+        {% if actualites %}
+            <div class="list-group">
+                {% for actu in actualites %}
+                <div class="list-group-item">
+                    <div class="d-flex w-100 justify-content-between">
+                        <h5 class="mb-1 text-primary">{{ actu.titre }}</h5>
+                        <span class="badge bg-secondary">{{ actu.categorie }}</span>
+                    </div>
+                    <p class="mb-1 mt-2">{{ actu.contenu }}</p>
+                    <small class="text-muted">Publié le {{ actu.date_publication.strftime('%d/%m/%Y') }}</small>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="alert alert-info">Aucune actualité pour le moment.</div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

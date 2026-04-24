@@ -2,17 +2,24 @@
 {% block title %}Concerts à venir - Musique Actu{% endblock %}
 
 {% block content %}
-<h1>Concerts à venir</h1>
-<div class="row mb-4">
+<div class="page-header">
+  <div>
+    <h1>Concerts à venir</h1>
+    <p class="text-muted">Filtrez les concerts par style, lieu et date pour trouver la meilleure soirée musicale.</p>
+  </div>
+  <a href="{{ url_for('main.index') }}" class="btn btn-outline-primary">Voir les actualités</a>
+</div>
+<div class="page-panel row g-4">
   <div class="col-lg-4">
     <div class="card p-3 shadow-sm">
+      <h4 class="section-title">Filtrer</h4>
       <form method="get">
         <div class="mb-3">
           <label class="form-label">Catégorie</label>
           <select class="form-select" name="category">
             <option value="">Toutes</option>
-            {% for category in categories %}
-              <option value="{{ category.id }}" {% if selected_category == category.id %}selected{% endif %}>{{ category.title }}</option>
+            {% for categorie in categories %}
+              <option value="{{ categorie.id }}" {% if selected_category == categorie.id %}selected{% endif %}>{{ categorie.titre }}</option>
             {% endfor %}
           </select>
         </div>

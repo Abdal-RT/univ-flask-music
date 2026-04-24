@@ -2,13 +2,19 @@
 {% block title %}Actualités musicales - Musique Actu{% endblock %}
 
 {% block content %}
-<h1>Actualités musicales</h1>
-<div class="row">
+<div class="page-header">
+  <div>
+    <h1>Actualités musicales</h1>
+    <p class="text-muted">Explorez les dernières tendances et les événements du monde de la musique par catégorie.</p>
+  </div>
+  <a href="{{ url_for('main.concerts') }}" class="btn btn-outline-primary">Voir les concerts</a>
+</div>
+<div class="page-panel row g-4">
   <div class="col-lg-4 mb-4">
     <div class="list-group shadow-sm">
       <div class="list-group-item active">Catégories</div>
-      {% for category in categories %}
-        <a href="{{ url_for('main.news_category', category_id=category.id) }}" class="list-group-item list-group-item-action">{{ category.title }}</a>
+      {% for categorie in categories %}
+        <a href="{{ url_for('main.categorie', categorie=categorie.id) }}" class="list-group-item list-group-item-action">{{ categorie.titre }}</a>
       {% endfor %}
     </div>
   </div>
@@ -24,7 +30,7 @@
           <div class="col-md-8">
             <div class="card-body">
               <h5 class="card-title">{{ article.title }}</h5>
-              <p class="text-muted small">{{ article.category.title }} • {{ article.published_at.strftime('%d/%m/%Y') }}</p>
+              <p class="text-muted small">{{ article.categorie.titre }} • {{ article.published_at.strftime('%d/%m/%Y') }}</p>
               <p class="card-text">{{ article.summary }}</p>
             </div>
           </div>

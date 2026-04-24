@@ -14,13 +14,13 @@
       </tr>
     </thead>
     <tbody>
-      {% for category in categories %}
+      {% for categorie in categories %}
         <tr>
-          <td>{{ category.title }}</td>
-          <td>{{ category.description or '-' }}</td>
+          <td>{{ categorie.titre }}</td>
+          <td>{{ categorie.description or '-' }}</td>
           <td>
-            <a href="{{ url_for('admin.edit_category', category_id=category.id) }}" class="btn btn-sm btn-outline-secondary me-2">Modifier</a>
-            <form action="{{ url_for('admin.delete_category', category_id=category.id) }}" method="post" class="d-inline">
+            <a href="{{ url_for('admin.edit_category', category_id=categorie.id) }}" class="btn btn-sm btn-outline-secondary me-2">Modifier</a>
+            <form action="{{ url_for('admin.delete_category', category_id=categorie.id) }}" method="post" class="d-inline">
               <button class="btn btn-sm btn-outline-danger" onclick="return confirm('Supprimer cette catégorie ?')">Supprimer</button>
             </form>
           </td>

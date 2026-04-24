@@ -2,18 +2,33 @@
 {% block title %}{{ concert.title }} - Musique Actu{% endblock %}
 
 {% block content %}
-<div class="row">
-  <div class="col-lg-8 mb-4">
+<div class="page-header">
+  <div>
+    <h1>{{ concert.title }}</h1>
+    <p class="text-muted">Détails, réservation et commentaires pour ce concert.</p>
+  </div>
+  <a href="{{ url_for('main.concerts') }}" class="btn btn-outline-primary">Retour aux concerts</a>
+</div>
+<div class="page-panel row g-4">
+  <div class="col-lg-8">
     <div class="card shadow-sm">
       {% if concert.image_url %}
         <img src="{{ concert.image_url }}" class="card-img-top" alt="{{ concert.title }}">
       {% endif %}
       <div class="card-body">
         <h1>{{ concert.title }}</h1>
-        <p class="text-muted">{{ concert.category.title }} • {{ concert.venue }}, {{ concert.city }}</p>
+        <p class="text-muted">{{ concert.categorie.titre }} • {{ concert.venue }}, {{ concert.city }}</p>
         <p>{{ concert.description }}</p>
         <p><strong>Date :</strong> {{ concert.date.strftime('%d/%m/%Y') }}</p>
         <p><strong>Places disponibles :</strong> {{ concert.available_seats }}</p>
+        {% if weather %}
+          <div class="alert alert-info mt-3">
+            <h5>Météo prévue</h5>
+            <p class="mb-1"><strong>{{ weather.icon }} {{ weather.label }}</strong> pour {{ weather.date }} à {{ weather.city }}.</p>
+            <p class="mb-1">Température estimée : {{ weather.temperature }}</p>
+            <p class="mb-0">Probabilité de pluie : {{ weather.chance }}</p>
+          </div>
+        {% endif %}
         {% if concert.review %}
           <div class="alert alert-secondary">
             <h5>Avis du rédacteur</h5>
@@ -24,7 +39,7 @@
     </div>
 
     <div class="mt-4">
-      <h3>Commentaires</h3>
+      <h3 class="section-title">Commentaires</h3>
       {% for comment in concert.comments %}
         <div class="card mb-3">
           <div class="card-body">

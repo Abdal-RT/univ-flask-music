@@ -1,172 +1,131 @@
-from datetime import date, datetime
-
+from datetime import datetime
 from flask_login import UserMixin
+from werkzeug.security import generate_password_hash, check_password_hash
+from app import db, login_manager
 
-from app import db
-
-
+# --- Utilisateurs ---
 class User(UserMixin, db.Model):
+    __tablename__ = 'users'
     id = db.Column(db.Integer, primary_key=True)
+    nom = db.Column(db.String(80), nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
-    name = db.Column(db.String(80), nullable=False)
-    password = db.Column(db.String(128), nullable=False)
+    password_hash = db.Column(db.String(256), nullable=False)
     is_admin = db.Column(db.Boolean, default=False)
-    reservations = db.relationship("Reservation", backref="user", lazy=True)
 
-    def __repr__(self):
-        return f"<User {self.email}>"
+    def set_password(self, password):
+        self.password_hash = generate_password_hash(password)
 
+    def check_password(self, password):
+        return check_password_hash(self.password_hash, password)
 
-class Category(db.Model):
+@login_manager.user_loader
+def load_user(user_id):
+    return User.query.get(int(user_id))
+
+# --- Catégories ---
+class Categorie(db.Model):
+    __tablename__ = 'categories'
     id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.String(80), unique=True, nullable=False)
+    titre = db.Column(db.String(80), nullable=False)
     description = db.Column(db.Text, nullable=True)
-    news = db.relationship("NewsArticle", backref="category", lazy=True)
-    concerts = db.relationship("Concert", backref="category", lazy=True)
+    
+    actualites = db.relationship('Actualite', backref='categorie', lazy=True)
+    concerts = db.relationship('Concert', backref='categorie', lazy=True)
 
-    def __repr__(self):
-        return f"<Category {self.title}>"
-
-
-class NewsArticle(db.Model):
+# --- Actualités ---
+class Actualite(db.Model):
+    __tablename__ = 'actualites'
     id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.String(150), nullable=False)
-    summary = db.Column(db.String(300), nullable=False)
-    content = db.Column(db.Text, nullable=False)
-    published_at = db.Column(db.DateTime, default=datetime.utcnow)
-    category_id = db.Column(db.Integer, db.ForeignKey("category.id"), nullable=False)
+    titre = db.Column(db.String(150), nullable=False)
+    resume = db.Column(db.String(300), nullable=False)
+    contenu = db.Column(db.Text, nullable=False)
     image_url = db.Column(db.String(255), nullable=True)
+    date_publication = db.Column(db.DateTime, default=datetime.utcnow)
+    categorie_id = db.Column(db.Integer, db.ForeignKey('categories.id'), nullable=False)
 
-    def __repr__(self):
-        return f"<NewsArticle {self.title}>"
-
-
+# --- Concerts ---
 class Concert(db.Model):
+    __tablename__ = 'concerts'
     id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.String(150), nullable=False)
-    venue = db.Column(db.String(120), nullable=False)
-    city = db.Column(db.String(80), nullable=False)
-    date = db.Column(db.Date, nullable=False)
-    ticket_limit = db.Column(db.Integer, nullable=False, default=120)
-    reserved_seats = db.Column(db.Integer, nullable=False, default=0)
-    category_id = db.Column(db.Integer, db.ForeignKey("category.id"), nullable=False)
-    description = db.Column(db.Text, nullable=True)
+    titre = db.Column(db.String(150), nullable=False)
+    lieu = db.Column(db.String(120), nullable=False)
+    ville = db.Column(db.String(80), nullable=False)
+    date_concert = db.Column(db.Date, nullable=False)
+    places_totales = db.Column(db.Integer, nullable=False)
+    description = db.Column(db.Text, nullable=False)
     image_url = db.Column(db.String(255), nullable=True)
-    review = db.Column(db.Text, nullable=True)
+    avis_redacteur = db.Column(db.Text, nullable=True)
+    categorie_id = db.Column(db.Integer, db.ForeignKey('categories.id'), nullable=False)
 
-    comments = db.relationship("Comment", backref="concert", lazy=True)
-    reservations = db.relationship("Reservation", backref="concert", lazy=True)
+    reservations = db.relationship('Reservation', backref='concert', lazy=True, cascade="all, delete-orphan")
+    commentaires = db.relationship('Commentaire', backref='concert', lazy=True, cascade="all, delete-orphan")
+
+    def places_disponibles(self):
+        reservees = sum(r.places for r in self.reservations)
+        return self.places_totales - reservees
 
     @property
-    def available_seats(self):
-        return max(self.ticket_limit - self.reserved_seats, 0)
+    def est_passe(self):
+        return self.date_concert < datetime.utcnow().date()
 
-    @property
-    def is_past(self):
-        return self.date < date.today()
-
-    def __repr__(self):
-        return f"<Concert {self.title} @ {self.venue}>"
-
-
-class Comment(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    author = db.Column(db.String(80), nullable=False)
-    content = db.Column(db.Text, nullable=False)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    concert_id = db.Column(db.Integer, db.ForeignKey("concert.id"), nullable=False)
-
-    def __repr__(self):
-        return f"<Comment {self.author} on {self.concert_id}>"
-
-
+# --- Réservations ---
 class Reservation(db.Model):
+    __tablename__ = 'reservations'
     id = db.Column(db.Integer, primary_key=True)
-    seats = db.Column(db.Integer, nullable=False)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    concert_id = db.Column(db.Integer, db.ForeignKey("concert.id"), nullable=False)
-    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
+    places = db.Column(db.Integer, nullable=False)
+    date_reservation = db.Column(db.DateTime, default=datetime.utcnow)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    concert_id = db.Column(db.Integer, db.ForeignKey('concerts.id'), nullable=False)
 
-    def __repr__(self):
-        return f"<Reservation {self.seats} seats for {self.user_id}>"
+# --- Commentaires ---
+class Commentaire(db.Model):
+    __tablename__ = 'commentaires'
+    id = db.Column(db.Integer, primary_key=True)
+    auteur = db.Column(db.String(80), nullable=False)
+    contenu = db.Column(db.String(300), nullable=False)
+    date_post = db.Column(db.DateTime, default=datetime.utcnow)
+    concert_id = db.Column(db.Integer, db.ForeignKey('concerts.id'), nullable=False)
 
-
+# --- Initialisation des données ---
 def seed_data():
-    if not User.query.filter_by(email="admin@musique.local").first():
-        user = User(
-            email="admin@musique.local",
-            name="Administrateur",
-            password="adminpass",
-            is_admin=True,
-        )
-        db.session.add(user)
+    # 1. Création de l'admin
+    if not User.query.filter_by(email='root@root.com').first():
+        admin = User(nom='Root Admin', email='root@root.com', is_admin=True)
+        admin.set_password('root')
+        db.session.add(admin)
 
-    if not Category.query.first():
-        pop = Category(title="Pop", description="Actualités et concerts Pop.")
-        rock = Category(title="Rock", description="Concerts et événements Rock.")
-        jazz = Category(title="Jazz", description="Informations sur le jazz.")
-        db.session.add_all([pop, rock, jazz])
-        db.session.flush()
+    # 2. Création des catégories (si elles n'existent pas)
+    if not Categorie.query.first():
+        cat_rock = Categorie(titre="Rock", description="Tout sur la musique Rock")
+        cat_electro = Categorie(titre="Electro", description="Musique électronique")
+        db.session.add_all([cat_rock, cat_electro])
+        db.session.commit() # On sauvegarde pour générer les IDs des catégories
 
-        news1 = NewsArticle(
-            title="Festival de la ville annonce sa programmation",
-            summary="Une programmation riche en pop et rock pour l’été.",
-            content="Les plus grands artistes de la scène locale partageront la scène...",
-            category_id=pop.id,
-            image_url="https://picsum.photos/seed/news1/800/450",
+    # 3. Création d'une actualité de test
+    if not Actualite.query.first():
+        cat_electro = Categorie.query.filter_by(titre="Electro").first()
+        actu = Actualite(
+            titre="Le retour de la French Touch",
+            resume="Un nouvel album très attendu pour cet été.",
+            contenu="Les plus grands DJ français se réunissent pour une compilation historique...",
+            categorie_id=cat_electro.id
         )
-        news2 = NewsArticle(
-            title="Un groupe rock local en tournée",
-            summary="La bande revient avec un nouvel album plein d’énergie.",
-            content="Après un succès critique, le groupe investit les salles de la région...",
-            category_id=rock.id,
-            image_url="https://picsum.photos/seed/news2/800/450",
-        )
-        news3 = NewsArticle(
-            title="Soirée jazz au théâtre historique",
-            summary="Une rencontre entre jeunes talents et légendes du jazz.",
-            content="La scène locale accueille des musiciens de renommée internationale...",
-            category_id=jazz.id,
-            image_url="https://picsum.photos/seed/news3/800/450",
-        )
+        db.session.add(actu)
 
-        concert1 = Concert(
-            title="Pop Night Festival",
-            venue="Grande Scène du Parc",
-            city="Lyon",
-            date=date.today().replace(day=min(date.today().day + 10, 28)),
-            ticket_limit=250,
-            reserved_seats=84,
-            category_id=pop.id,
-            description="Une soirée Pop avec des artistes locaux et internationaux.",
-            image_url="https://picsum.photos/seed/concert1/900/450",
+    # 4. Création d'un concert de test (dans le futur)
+    if not Concert.query.first():
+        cat_rock = Categorie.query.filter_by(titre="Rock").first()
+        concert = Concert(
+            titre="Musilac 2026",
+            lieu="Esplanade du Lac",
+            ville="Aix-les-Bains",
+            # On met une date dans le futur pour qu'il apparaisse dans "Prochains concerts"
+            date_concert=datetime(2026, 7, 10).date(),
+            places_totales=15000,
+            description="Le plus grand festival pop-rock de la région revient fort !",
+            categorie_id=cat_rock.id
         )
-        concert2 = Concert(
-            title="Rock Roots Live",
-            venue="Salle des Fêtes",
-            city="Villeurbanne",
-            date=date.today().replace(day=min(date.today().day + 18, 28)),
-            ticket_limit=180,
-            reserved_seats=112,
-            category_id=rock.id,
-            description="Le meilleur du rock indépendant pour une nuit énergique.",
-            image_url="https://picsum.photos/seed/concert2/900/450",
-        )
-        concert3 = Concert(
-            title="Brunch Jazz Session",
-            venue="Café du Quai",
-            city="Villeurbanne",
-            date=date.today().replace(day=max(date.today().day - 12, 1)),
-            ticket_limit=90,
-            reserved_seats=90,
-            category_id=jazz.id,
-            description="Un concert intimiste avec piano, contrebasse et trompette.",
-            image_url="https://picsum.photos/seed/concert3/900/450",
-            review="Le chef d’orchestre a offert une performance intime et captivante.",
-        )
+        db.session.add(concert)
 
-        comment1 = Comment(author="Camille", content="Super ambiance, un moment inoubliable.", concert=concert3)
-
-        db.session.add_all([news1, news2, news3, concert1, concert2, concert3, comment1])
-
+    # On valide tous les ajouts finaux
     db.session.commit()

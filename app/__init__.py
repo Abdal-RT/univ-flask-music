@@ -9,6 +9,8 @@ from flask_wtf.csrf import CSRFProtect
 from sqlalchemy import create_engine, text
 from sqlalchemy.engine.url import make_url
 
+from config import Config
+
 
 db = SQLAlchemy()
 login_manager = LoginManager()
@@ -42,29 +44,15 @@ def ensure_database_exists(database_uri):
 
 def create_app():
     app = Flask(__name__, instance_relative_config=False)
-    app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", "dev-secret-key")
-    database_uri = (
-        os.environ.get("DATABASE_URL")
-        or os.environ.get("SQLALCHEMY_DATABASE_URI")
-        or DEFAULT_DATABASE_URI
-    )
+    app.config.from_object(Config)
+    database_uri = app.config["SQLALCHEMY_DATABASE_URI"]
 
     if is_mysql_uri(database_uri):
         try:
             ensure_database_exists(database_uri)
         except Exception:
-            if database_uri == DEFAULT_DATABASE_URI:
-                sqlite_path = Path(__file__).resolve().parent.parent / "univ_music.db"
-                database_uri = f"sqlite:///{sqlite_path}"
-                print(
-                    f"[WARN] MariaDB non accessible, bascule sur SQLite de développement : {sqlite_path}"
-                )
-            else:
-                raise
-
-    app.config["SQLALCHEMY_DATABASE_URI"] = database_uri
-    app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
-    app.config["WTF_CSRF_TIME_LIMIT"] = None
+            print("[ERROR] MariaDB est inaccessible. Vérifie DATABASE_URL ou les variables DB_...")
+            raise
 
     db.init_app(app)
     login_manager.init_app(app)

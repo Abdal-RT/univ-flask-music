@@ -22,28 +22,42 @@ Ce projet implémente un site d'actualité musicale en Flask avec un modèle MVC
    source venv/bin/activate
    pip install -r requirements.txt
    ```
-2. Configurez votre base de données MariaDB.
-   Exemple de variable d'environnement :
+2. Initialisez MariaDB et créez l’utilisateur dédié :
    ```bash
-   export DATABASE_URL="mysql+pymysql://user:password@127.0.0.1:3306/univ_music"
+   bash init_db.sh
+   ```
+   Si tu veux définir d’autres identifiants, tu peux exporter des variables avant :
+   ```bash
+   export DB_NAME="univ_music"
+   export DB_USER="univ_user"
+   export DB_PASS="univ_pass"
+   export DB_HOST="127.0.0.1"
+   export DB_PORT="3306"
+   bash init_db.sh
+   ```
+   Si tu utilises un socket Unix, définis plutôt :
+   ```bash
+   export DB_SOCKET="/run/mysqld/mysqld.sock"
+   bash init_db.sh
+   ```
+3. Configurez votre application :
+   ```bash
+   export DATABASE_URL="mysql+pymysql://univ_user:univ_pass@127.0.0.1:3306/univ_music"
+   ```
+   ou si tu utilises le socket Unix :
+   ```bash
+   export DB_SOCKET="/run/mysqld/mysqld.sock"
+   export DATABASE_URL="mysql+pymysql://univ_user:univ_pass@localhost/univ_music?unix_socket=/run/mysqld/mysqld.sock"
    ```
    Vous pouvez également copier `.env.example` vers `.env` et adapter les valeurs.
-3. Lancez l'application :
+4. Lancez l'application :
    ```bash
    python app.py
    ```
-4. Ouvrez votre navigateur sur `http://127.0.0.1:5000`.
-
-### Installation avec Docker
-1. Créez `docker-compose.yml` et `Dockerfile` (déjà présents dans ce projet).
-2. Démarrez les services :
-   ```bash
-   docker compose up --build
-   ```
-3. Ouvrez votre navigateur sur `http://127.0.0.1:5000`.
+5. Ouvrez votre navigateur sur `http://127.0.0.1:5000`.
 
 ### Base MariaDB
-- Le script de démarrage tente de créer automatiquement la base `univ_music` si elle n'existe pas.
+- `init_db.sh` crée la base `univ_music` et l’utilisateur `univ_user` par défaut.
 - Les informations de connexion sont lues depuis `DATABASE_URL`.
 - Si MariaDB n'est pas disponible, l'application bascule automatiquement sur une base SQLite locale pour le développement.
 

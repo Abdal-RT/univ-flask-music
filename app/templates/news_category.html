@@ -1,9 +1,16 @@
 {% extends 'base.html' %}
-{% block title %}{{ category.title }} - Actualités musicales{% endblock %}
+{% block title %}{{ categorie.titre }} - Actualités musicales{% endblock %}
 
 {% block content %}
-<h1>Actualités : {{ category.title }}</h1>
-{% for article in articles %}
+<div class="page-header">
+  <div>
+    <h1>Actualités : {{ categorie.titre }}</h1>
+    <p class="text-muted">Articles et analyses du genre {{ categorie.titre }}.</p>
+  </div>
+  <a href="{{ url_for('main.index') }}" class="btn btn-outline-primary">Retour aux actualités</a>
+</div>
+<div class="page-panel">
+  {% for article in articles %}
   <div class="card mb-4 shadow-sm">
     {% if article.image_url %}
       <img src="{{ article.image_url }}" class="card-img-top" alt="{{ article.title }}">
@@ -18,4 +25,5 @@
 {% else %}
   <div class="alert alert-info">Aucun article pour cette catégorie.</div>
 {% endfor %}
+</div>
 {% endblock %}

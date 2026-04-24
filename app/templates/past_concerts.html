@@ -1,28 +1,26 @@
-{% extends 'base.html' %}
-{% block title %}Concerts passés - Musique Actu{% endblock %}
+{% extends "base.html" %}
 
 {% block content %}
-<h1>Concerts passés</h1>
-<div class="row">
-  {% for concert in concerts %}
-    <div class="col-md-6 mb-4">
-      <div class="card h-100 shadow-sm">
-        {% if concert.image_url %}
-          <img src="{{ concert.image_url }}" class="card-img-top" alt="{{ concert.title }}">
-        {% endif %}
-        <div class="card-body">
-          <h5 class="card-title">{{ concert.title }}</h5>
-          <p class="text-muted">{{ concert.venue }} • {{ concert.city }}</p>
-          <p><strong>Date :</strong> {{ concert.date.strftime('%d/%m/%Y') }}</p>
-          <p>{{ concert.review or 'Aucun avis disponible.' }}</p>
-          <a href="{{ url_for('main.concert_detail', concert_id=concert.id) }}" class="btn btn-outline-primary">Voir le concert</a>
+<h2 class="mb-4">Concerts Passés</h2>
+
+{% if concerts %}
+    <div class="row">
+        {% for concert in concerts %}
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">{{ concert.titre }}</h5>
+                    <h6 class="card-subtitle mb-2 text-muted">A eu lieu le {{ concert.date_concert.strftime('%d/%m/%Y') }} à {{ concert.lieu }}</h6>
+                    {% if concert.avis_redacteur %}
+                        <p class="card-text mt-3"><strong>Avis du rédacteur :</strong> {{ concert.avis_redacteur }}</p>
+                    {% endif %}
+                </div>
+            </div>
         </div>
-      </div>
+        {% endfor %}
     </div>
-  {% else %}
-    <div class="col-12">
-      <div class="alert alert-info">Aucun concert passé trouvé.</div>
-    </div>
-  {% endfor %}
-</div>
+{% else %}
+    <div class="alert alert-info">Aucun concert passé n'est répertorié pour le moment.</div>
+{% endif %}
+
 {% endblock %}
