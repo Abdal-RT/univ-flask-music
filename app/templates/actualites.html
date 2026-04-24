@@ -2,36 +2,29 @@
 {% block title %}Actualités musicales - Musique Actu{% endblock %}
 
 {% block content %}
-<div class="page-header">
+<div class="page-header mb-4 d-flex justify-content-between align-items-center">
   <div>
     <h1>Actualités musicales</h1>
-    <p class="text-muted">Explorez les dernières tendances et les événements du monde de la musique par catégorie.</p>
+    <p class="text-muted">Explorez les dernières tendances du monde de la musique.</p>
   </div>
   <a href="{{ url_for('main.concerts') }}" class="btn btn-outline-primary">Voir les concerts</a>
 </div>
 <div class="page-panel row g-4">
-  <div class="col-lg-4 mb-4">
-    <div class="list-group shadow-sm">
-      <div class="list-group-item active">Catégories</div>
-      {% for categorie in categories %}
-        <a href="{{ url_for('main.categorie', categorie=categorie.id) }}" class="list-group-item list-group-item-action">{{ categorie.titre }}</a>
-      {% endfor %}
-    </div>
-  </div>
-  <div class="col-lg-8">
-    {% for article in articles %}
+  <div class="col-lg-12">
+    {% for article in actualites %}
       <div class="card mb-4 shadow-sm">
         <div class="row g-0">
           {% if article.image_url %}
             <div class="col-md-4">
-              <img src="{{ article.image_url }}" class="img-fluid rounded-start" alt="{{ article.title }}">
+              <img src="{{ article.image_url }}" class="img-fluid rounded-start h-100 object-fit-cover" alt="{{ article.titre }}">
             </div>
           {% endif %}
           <div class="col-md-8">
             <div class="card-body">
-              <h5 class="card-title">{{ article.title }}</h5>
-              <p class="text-muted small">{{ article.categorie.titre }} • {{ article.published_at.strftime('%d/%m/%Y') }}</p>
-              <p class="card-text">{{ article.summary }}</p>
+              <h5 class="card-title">{{ article.titre }}</h5>
+              <p class="text-muted small">{{ article.categorie.titre }} • {{ article.date_publication.strftime('%d/%m/%Y') }}</p>
+              <p class="card-text fw-bold">{{ article.resume }}</p>
+              <p class="card-text">{{ article.contenu }}</p>
             </div>
           </div>
         </div>

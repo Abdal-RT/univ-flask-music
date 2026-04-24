@@ -5,15 +5,18 @@
     <div class="col-md-6">
         <h2 class="mb-3">Prochains Concerts</h2>
         {% if concerts %}
-            <div class="list-group">
+            <div class="list-group shadow-sm">
                 {% for concert in concerts %}
-                <div class="list-group-item">
+                <div class="list-group-item list-group-item-action">
                     <div class="d-flex w-100 justify-content-between">
                         <h5 class="mb-1">{{ concert.titre }}</h5>
                         <small class="text-muted">{{ concert.date_concert.strftime('%d/%m/%Y') }}</small>
                     </div>
-                    <p class="mb-1">📍 {{ concert.lieu }} | 🎸 {{ concert.type_musique }}</p>
+                    <p class="mb-1">📍 {{ concert.lieu }} | 🎸 {{ concert.categorie.titre }}</p>
                     <small>Places : {{ concert.places_disponibles() }} / {{ concert.places_totales }}</small>
+                    <div class="mt-2">
+                        <a href="{{ url_for('main.concert_detail', concert_id=concert.id) }}" class="btn btn-sm btn-outline-primary">Voir plus</a>
+                    </div>
                 </div>
                 {% endfor %}
             </div>
@@ -25,14 +28,14 @@
     <div class="col-md-6">
         <h2 class="mb-3">Dernières Actualités</h2>
         {% if actualites %}
-            <div class="list-group">
+            <div class="list-group shadow-sm">
                 {% for actu in actualites %}
                 <div class="list-group-item">
                     <div class="d-flex w-100 justify-content-between">
                         <h5 class="mb-1 text-primary">{{ actu.titre }}</h5>
-                        <span class="badge bg-secondary">{{ actu.categorie }}</span>
+                        <span class="badge bg-secondary">{{ actu.categorie.titre }}</span>
                     </div>
-                    <p class="mb-1 mt-2">{{ actu.contenu }}</p>
+                    <p class="mb-1 mt-2">{{ actu.resume }}</p>
                     <small class="text-muted">Publié le {{ actu.date_publication.strftime('%d/%m/%Y') }}</small>
                 </div>
                 {% endfor %}

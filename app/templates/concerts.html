@@ -2,54 +2,29 @@
 {% block title %}Concerts à venir - Musique Actu{% endblock %}
 
 {% block content %}
-<div class="page-header">
+<div class="page-header mb-4 d-flex justify-content-between align-items-center">
   <div>
     <h1>Concerts à venir</h1>
-    <p class="text-muted">Filtrez les concerts par style, lieu et date pour trouver la meilleure soirée musicale.</p>
+    <p class="text-muted">La meilleure sélection musicale de la région.</p>
   </div>
   <a href="{{ url_for('main.index') }}" class="btn btn-outline-primary">Voir les actualités</a>
 </div>
 <div class="page-panel row g-4">
-  <div class="col-lg-4">
-    <div class="card p-3 shadow-sm">
-      <h4 class="section-title">Filtrer</h4>
-      <form method="get">
-        <div class="mb-3">
-          <label class="form-label">Catégorie</label>
-          <select class="form-select" name="category">
-            <option value="">Toutes</option>
-            {% for categorie in categories %}
-              <option value="{{ categorie.id }}" {% if selected_category == categorie.id %}selected{% endif %}>{{ categorie.titre }}</option>
-            {% endfor %}
-          </select>
-        </div>
-        <div class="mb-3">
-          <label class="form-label">Ville</label>
-          <input type="text" class="form-control" name="city" value="{{ selected_city or '' }}" placeholder="Ex. Lyon" />
-        </div>
-        <div class="mb-3">
-          <label class="form-label">Date</label>
-          <input type="date" class="form-control" name="date" value="{{ selected_date or '' }}" />
-        </div>
-        <button class="btn btn-primary w-100">Filtrer</button>
-      </form>
-    </div>
-  </div>
-  <div class="col-lg-8">
+  <div class="col-lg-12">
     {% if concerts %}
       <div class="row">
         {% for concert in concerts %}
-          <div class="col-md-6 mb-4">
+          <div class="col-md-4 mb-4">
             <div class="card h-100 shadow-sm">
               {% if concert.image_url %}
-                <img src="{{ concert.image_url }}" class="card-img-top" alt="{{ concert.title }}">
+                <img src="{{ concert.image_url }}" class="card-img-top" alt="{{ concert.titre }}">
               {% endif %}
               <div class="card-body">
-                <h5 class="card-title">{{ concert.title }}</h5>
-                <p class="text-muted small">{{ concert.category.title }} • {{ concert.venue }}, {{ concert.city }}</p>
-                <p class="card-text">Date : {{ concert.date.strftime('%d/%m/%Y') }}</p>
-                <p class="card-text">Places restantes : {{ concert.available_seats }}</p>
-                <a href="{{ url_for('main.concert_detail', concert_id=concert.id) }}" class="btn btn-outline-primary">Voir le concert</a>
+                <h5 class="card-title">{{ concert.titre }}</h5>
+                <p class="text-muted small">{{ concert.categorie.titre }} • {{ concert.lieu }}, {{ concert.ville }}</p>
+                <p class="card-text">Date : {{ concert.date_concert.strftime('%d/%m/%Y') }}</p>
+                <p class="card-text">Places restantes : {{ concert.places_disponibles() }}</p>
+                <a href="{{ url_for('main.concert_detail', concert_id=concert.id) }}" class="btn btn-outline-primary w-100">Détails / Réserver</a>
               </div>
             </div>
           </div>
