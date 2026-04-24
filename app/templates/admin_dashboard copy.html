@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+{% block title %}Administration - Musique Actu{% endblock %}
+
+{% block content %}
+<h1 class="mb-4">Panneau d'Administration</h1>
+<div class="row">
+  <div class="col-md-3 mb-3">
+    <div class="card text-white bg-primary shadow-sm h-100">
+      <div class="card-body">
+        <h5 class="card-title">Catégories</h5>
+        <h2 class="display-4">{{ categories }}</h2>
+        <a href="{{ url_for('admin.categories_list') }}" class="text-white text-decoration-none fw-bold">Gérer ➔</a>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3 mb-3">
+    <div class="card text-white bg-success shadow-sm h-100">
+      <div class="card-body">
+        <h5 class="card-title">Concerts</h5>
+        <h2 class="display-4">{{ concerts }}</h2>
+        <a href="{{ url_for('admin.concerts_list') }}" class="text-white text-decoration-none fw-bold">Gérer ➔</a>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3 mb-3">
+    <div class="card text-white bg-warning shadow-sm h-100">
+      <div class="card-body text-dark">
+        <h5 class="card-title">Actualités</h5>
+        <h2 class="display-4">{{ actus }}</h2>
+        <a href="{{ url_for('admin.actualites_list') }}" class="text-dark text-decoration-none fw-bold">Gérer ➔</a>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3 mb-3">
+    <div class="card text-white bg-danger shadow-sm h-100">
+      <div class="card-body">
+        <h5 class="card-title">Modération</h5>
+        <h2 class="display-4">{{ commentaires }}</h2>
+        <a href="{{ url_for('admin.commentaires_list') }}" class="text-white text-decoration-none fw-bold">Avis et Mots ➔</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
