@@ -51,7 +51,7 @@
             <div class="text-danger">{{ error }}</div>
           {% endfor %}
         </div>
-        {{ reservation_form.submit(class_='btn btn-primary w-100') }}
+        {{ reservation_form.reserve(class_='btn btn-primary w-100') }}
       </form>
     </div>
 
@@ -73,7 +73,7 @@
             <div class="text-danger">{{ error }}</div>
           {% endfor %}
         </div>
-        {{ comment_form.submit(class_='btn btn-outline-primary w-100') }}
+        {{ comment_form.publish(class_='btn btn-outline-primary w-100') }}
       </form>
     </div>
   </div>

@@ -50,10 +50,10 @@ class ConcertForm(FlaskForm):
 
 class ReservationForm(FlaskForm):
     seats = IntegerField("Nombre de places", validators=[DataRequired(), NumberRange(min=1, max=10)])
-    submit = SubmitField("Réserver")
+    reserve = SubmitField("Réserver")
 
 
 class CommentForm(FlaskForm):
     author = StringField("Nom", validators=[DataRequired(), Length(max=80)])
     content = TextAreaField("Commentaire", validators=[DataRequired(), Length(max=300)])
-    submit = SubmitField("Publier")
+    publish = SubmitField("Publier")

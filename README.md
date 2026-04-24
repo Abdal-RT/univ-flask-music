@@ -14,6 +14,8 @@ Ce projet implémente un site d'actualité musicale en Flask avec un modèle MVC
 - CSS avec Bootstrap
 
 ## Installation
+
+### Installation locale
 1. Créez un environnement Python et installez les dépendances :
    ```bash
    python -m venv venv
@@ -25,11 +27,25 @@ Ce projet implémente un site d'actualité musicale en Flask avec un modèle MVC
    ```bash
    export DATABASE_URL="mysql+pymysql://user:password@127.0.0.1:3306/univ_music"
    ```
+   Vous pouvez également copier `.env.example` vers `.env` et adapter les valeurs.
 3. Lancez l'application :
    ```bash
    python app.py
    ```
 4. Ouvrez votre navigateur sur `http://127.0.0.1:5000`.
+
+### Installation avec Docker
+1. Créez `docker-compose.yml` et `Dockerfile` (déjà présents dans ce projet).
+2. Démarrez les services :
+   ```bash
+   docker compose up --build
+   ```
+3. Ouvrez votre navigateur sur `http://127.0.0.1:5000`.
+
+### Base MariaDB
+- Le script de démarrage tente de créer automatiquement la base `univ_music` si elle n'existe pas.
+- Les informations de connexion sont lues depuis `DATABASE_URL`.
+- Si MariaDB n'est pas disponible, l'application bascule automatiquement sur une base SQLite locale pour le développement.
 
 ## Compte administrateur
 - Email : `admin@musique.local`

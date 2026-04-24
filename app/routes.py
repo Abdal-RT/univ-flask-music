@@ -6,7 +6,7 @@ from werkzeug.security import check_password_hash, generate_password_hash
 
 from app import db, login_manager
 from app.forms import CommentForm, ConcertForm, LoginForm, RegisterForm, ReservationForm
-from app.models import Category, Concert, NewsArticle, Reservation, User
+from app.models import Category, Comment, Concert, NewsArticle, Reservation, User
 
 main_bp = Blueprint("main", __name__)
 
@@ -64,7 +64,7 @@ def concert_detail(concert_id):
     reservation_form = ReservationForm()
     comment_form = CommentForm()
 
-    if reservation_form.validate_on_submit() and "submit" in request.form:
+    if reservation_form.validate_on_submit() and reservation_form.reserve.data:
         if not current_user.is_authenticated:
             flash("Vous devez être connecté pour réserver.", "warning")
             return redirect(url_for("main.login"))
@@ -80,7 +80,7 @@ def concert_detail(concert_id):
             flash("Réservation réussie !", "success")
             return redirect(url_for("main.concert_detail", concert_id=concert_id))
 
-    if comment_form.validate_on_submit() and "author" in request.form:
+    if comment_form.validate_on_submit() and comment_form.publish.data:
         comment = Comment(
             author=comment_form.author.data,
             content=comment_form.content.data,
