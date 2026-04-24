@@ -17,6 +17,20 @@
   --transition: 240ms ease;
 }
 
+h1, h2, h3, h4, h5, h6 {
+  color: #ffffff !important;
+}
+
+/* Force tous les paragraphes en blanc cassé très lisible */
+p {
+  color: rgba(244, 244, 249, 0.95) !important;
+}
+
+/* Améliore la visibilité du texte 'muted' (gris) pour qu'il ne soit pas trop sombre */
+.text-muted, .card .text-muted, small {
+  color: rgba(244, 244, 249, 0.75) !important;
+}
+
 html {
   scroll-behavior: smooth;
 }
