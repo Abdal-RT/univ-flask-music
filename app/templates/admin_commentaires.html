@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+{% block content %}
+<h1 class="mb-3">Modération des Commentaires</h1>
+<div class="row">
+  {% for comm in commentaires %}
+    <div class="col-md-6 mb-3">
+      <div class="card shadow-sm border-danger border-opacity-25">
+        <div class="card-body">
+          <div class="d-flex justify-content-between">
+            <h6 class="card-title fw-bold">{{ comm.auteur }}</h6>
+            <small class="text-muted">{{ comm.date_post.strftime('%d/%m/%Y %H:%M') }}</small>
+          </div>
+          <p class="text-secondary small mb-2">Concert : {{ comm.concert.titre }}</p>
+          <p class="card-text">"{{ comm.contenu }}"</p>
+          <form action="{{ url_for('admin.delete_commentaire', id=comm.id) }}" method="post" class="text-end">
+            <button class="btn btn-sm btn-danger">Supprimer ce message</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  {% else %}
+    <div class="alert alert-success">Aucun commentaire à modérer ou site vide.</div>
+  {% endfor %}
+</div>
+{% endblock %}

@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1>Gérer les Actualités</h1>
+    <a href="{{ url_for('admin.add_actualite') }}" class="btn btn-primary">+ Ajouter</a>
+</div>
+<div class="table-responsive shadow-sm bg-white rounded">
+  <table class="table table-striped align-middle mb-0">
+    <thead class="table-dark">
+      <tr><th>Titre</th><th>Catégorie</th><th>Date</th><th class="text-end">Actions</th></tr>
+    </thead>
+    <tbody>
+      {% for actu in actualites %}
+        <tr>
+          <td class="fw-bold">{{ actu.titre }}</td>
+          <td>{{ actu.categorie.titre }}</td>
+          <td>{{ actu.date_publication.strftime('%d/%m/%Y') }}</td>
+          <td class="text-end">
+            <a href="{{ url_for('admin.edit_actualite', id=actu.id) }}" class="btn btn-sm btn-outline-secondary">Modifier</a>
+            <form action="{{ url_for('admin.delete_actualite', id=actu.id) }}" method="post" class="d-inline">
+              <button class="btn btn-sm btn-outline-danger" onclick="return confirm('Supprimer ?')">Supprimer</button>
+            </form>
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}
